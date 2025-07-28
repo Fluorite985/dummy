@@ -1,0 +1,11 @@
+streamlit
+chromadb
+langchain-community
+langchain-ollama
+langchain-chroma
+python-docx
+docx2txt
+watchdog
+pypdf
+unstructured
+tiktoken
