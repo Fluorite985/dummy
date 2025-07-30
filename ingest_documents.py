@@ -6,11 +6,11 @@ from langchain_community.document_loaders import (
     TextLoader,
     UnstructuredWordDocumentLoader,
     UnstructuredMarkdownLoader)
-from langchain_text_splitters import TokenTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from transformers import AutoTokenizer
 from langchain.schema.document import Document
 from embedding_function import get_embedding_function
 from langchain_chroma import Chroma
-
 
 
 DATA_PATH ="data"
@@ -58,13 +58,24 @@ def load_documents():
 
     return documents
 
+# 🔽 UPDATED FUNCTION
 def split_documents(documents: list[Document]):
-    text_splitter = TokenTextSplitter(
-        chunk_size=1024,       # tokens per chunk
-        chunk_overlap=128,     # token overlap
-    )
-    return text_splitter.split_documents(documents)
+    # Define the model you're using in Ollama to get the correct tokenizer
+    # IMPORTANT: Change this to the Hugging Face identifier for your model
+    HF_MODEL_NAME = "meta-llama/Meta-Llama-3-8B-Instruct" 
 
+    # Load the tokenizer for your specific model
+    tokenizer = AutoTokenizer.from_pretrained(HF_MODEL_NAME)
+
+    # Use RecursiveCharacterTextSplitter with the Hugging Face tokenizer
+    text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
+        tokenizer,
+        chunk_size=1024,        # Max tokens per chunk
+        chunk_overlap=128,      # Token overlap between chunks
+    )
+    
+    print(f"Splitting documents using tokenizer for '{HF_MODEL_NAME}'...")
+    return text_splitter.split_documents(documents)
 
 
 def add_to_chroma(chunks: list[Document]):
@@ -91,7 +102,6 @@ def add_to_chroma(chunks: list[Document]):
         print("No new documents to add.")  
 
 
-
 def calculate_chunk_ids(chunks):
     last_page_id = None
     current_chunk_index=0
@@ -113,11 +123,9 @@ def calculate_chunk_ids(chunks):
     return chunks    
 
 
-
 def clear_database():
     if os.path.exists(CHROMA_PATH):
         shutil.rmtree(CHROMA_PATH)
-
 
 
 if __name__ == "__main__":
