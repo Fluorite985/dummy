@@ -58,7 +58,6 @@ def load_documents():
 
     return documents
 
-# 🔽 UPDATED FUNCTION
 def split_documents(documents: list[Document]):
     # Define the model you're using in Ollama to get the correct tokenizer
     # IMPORTANT: Change this to the Hugging Face identifier for your model
